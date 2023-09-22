@@ -16,4 +16,4 @@ RUN pip install --no-cache-dir -r requirements.txt
 EXPOSE 8501
 
 # Define the command to run the app using Streamlit
-CMD ["streamlit", "run", "streamlit_plotly_top_customers_app_full_regen.py"]
+CMD ["streamlit", "run", "streamlit_plotly_top_customers_app_pdf_final_fixed_v4.py"]
