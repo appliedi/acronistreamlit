@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 COPY . /app
-COPY ./streamlit_plotly_top_customers_app_pdf_final_fixed_v4.py /app/
+COPY ./app.py /app/
 
 
 # Install the required packages
