@@ -1,18 +1,17 @@
-
-# Use the official Python image from the DockerHub
+# Use an official Python runtime as the base image
 FROM python:3.9-slim
 
-# Set the working directory in docker
+# Set the working directory in the container to /app
 WORKDIR /app
 
-# Copy the dependencies file to the working directory
-COPY requirements.txt .
+# Copy the current directory contents into the container at /app
+COPY . /app
 
-# Install any dependencies
+# Install the required packages
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Copy the content of the local src directory to the working directory
-COPY . .
+# Make port 8501 available to the world outside this container
+EXPOSE 8501
 
-# Specify the command to run on container start
-CMD [ "streamlit", "run", "streamlit_plotly_top_customers_app_full_regen.py" ]
+# Define the command to run the app using Streamlit
+CMD ["streamlit", "run", "streamlit_plotly_top_customers_app_full_regen.py"]
