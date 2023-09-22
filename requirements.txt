@@ -4,3 +4,5 @@ numpy
 fpdf
 plotly
 openpyxl
+matplotlib
+kaleido
