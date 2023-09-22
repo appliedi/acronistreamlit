@@ -6,7 +6,7 @@ WORKDIR /app
 
 # Copy the current directory contents into the container at /app
 COPY . /app
-COPY streamlit_plotly_top_customers_app_full_regen.py /app/
+COPY ./streamlit_plotly_top_customers_app_full_regen.py /app/
 
 
 # Install the required packages
