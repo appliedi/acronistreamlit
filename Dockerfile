@@ -11,6 +11,8 @@ COPY ./app.py /app/
 
 # Install the required packages
 RUN pip install --upgrade pip
+RUN pip uninstall python-dotenv
+RUN python -m pip install python-dotenv
 #RUN pip install --no-cache-dir -r requirements.txt
 RUN pip install -v --no-cache-dir -r requirements.txt
 
