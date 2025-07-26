@@ -19,8 +19,8 @@ def generate_pdf_updated(data, tenant_name, bar_fig, pie_fig):
     pdf.image(pie_img_path, x=10, y=pdf.get_y(), w=190)
     pdf.ln(65)
     
-    col_widths = [25, 25, 40, 20, 25, 20, 25]
-    columns = ['Service name', 'Edition', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']
+    col_widths = [25, 25, 20, 40, 20, 25, 20, 25]
+    columns = ['Service name', 'Edition', 'SKU', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']
     
     for i, column in enumerate(columns):
         pdf.cell(col_widths[i], 10, txt=column, border=1)
@@ -100,7 +100,7 @@ if current_usage_file:
 
         tenant_name = st.selectbox("Select Tenant name:", merged_data['Tenant name'].unique())
 
-        tenant_data = merged_data[merged_data['Tenant name'] == tenant_name][['Service name', 'Edition', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']]
+        tenant_data = merged_data[merged_data['Tenant name'] == tenant_name][['Service name', 'Edition', 'SKU', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']]
         
         # Convert 'total' to float for plotting
         tenant_data['total_numeric'] = tenant_data['total'].astype(float)
@@ -108,7 +108,7 @@ if current_usage_file:
         # Format 'perunit' and 'total' as US dollars for display
         tenant_data['perunit'] = tenant_data['perunit'].map("${:,.2f}".format)
         tenant_data['total'] = tenant_data['total'].map("${:,.2f}".format)
-        st.write(tenant_data[['Service name', 'Edition', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']])
+        st.write(tenant_data[['Service name', 'Edition', 'SKU', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']])
         
         # Display summary statistics
         st.subheader("Summary Statistics")
@@ -147,7 +147,7 @@ if current_usage_file:
             )
 
         if st.button("Download Report as PDF"):
-            pdf_data = generate_pdf_updated(tenant_data[['Service name', 'Edition', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']], tenant_name, bar_fig, pie_fig)
+            pdf_data = generate_pdf_updated(tenant_data[['Service name', 'Edition', 'SKU', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']], tenant_name, bar_fig, pie_fig)
             st.download_button(
                 label="Download PDF Report",
                 data=pdf_data,
@@ -198,5 +198,3 @@ def generate_pdf_updated_v2(data, tenant_name, bar_fig, pie_fig):
     output = io.BytesIO()
     pdf_bytes = pdf.output(dest="S").encode("latin1")
     return pdf_bytes
-
-
