@@ -98,6 +98,95 @@ if current_usage_file:
         top_customers = total_costs.sort_values(ascending=False).head(30)
         st.write(top_customers.reset_index(name='Total Cost'))
 
+        # New section for product/SKU analysis
+        st.subheader("Product/SKU Analysis")
+        
+        # Create selectboxes for product and SKU filtering
+        col1, col2 = st.columns(2)
+        
+        with col1:
+            # Get unique service names for selection
+            service_options = ['All Services'] + list(merged_data['Service name'].unique())
+            selected_service = st.selectbox("Select Service:", service_options)
+        
+        with col2:
+            # Filter SKUs based on selected service
+            if selected_service == 'All Services':
+                sku_options = ['All SKUs'] + list(merged_data['SKU'].unique())
+            else:
+                filtered_skus = merged_data[merged_data['Service name'] == selected_service]['SKU'].unique()
+                sku_options = ['All SKUs'] + list(filtered_skus)
+            selected_sku = st.selectbox("Select SKU:", sku_options)
+        
+        # Filter data based on selections
+        filtered_product_data = merged_data.copy()
+        
+        if selected_service != 'All Services':
+            filtered_product_data = filtered_product_data[filtered_product_data['Service name'] == selected_service]
+        
+        if selected_sku != 'All SKUs':
+            filtered_product_data = filtered_product_data[filtered_product_data['SKU'] == selected_sku]
+        
+        # Display filtered results
+        if not filtered_product_data.empty:
+            st.subheader(f"Customer Usage for {selected_service} - {selected_sku}")
+            
+            # Create summary table grouped by tenant
+            product_summary = filtered_product_data.groupby(['Tenant name']).agg({
+                'Total usage': 'sum',
+                'total': 'sum',
+                'perunit': 'first',  # Assuming same price per unit for same SKU
+                'Edition': 'first',
+                'Metric name': 'first',
+                'Metric unit': 'first'
+            }).reset_index()
+            
+            # Format the pricing columns
+            product_summary['perunit_formatted'] = product_summary['perunit'].map("${:,.2f}".format)
+            product_summary['total_formatted'] = product_summary['total'].map("${:,.2f}".format)
+            
+            # Sort by total cost descending
+            product_summary = product_summary.sort_values('total', ascending=False)
+            
+            # Display the summary table
+            display_columns = ['Tenant name', 'Edition', 'Metric name', 'Metric unit', 'Total usage', 'perunit_formatted', 'total_formatted']
+            column_names = ['Customer', 'Edition', 'Metric Name', 'Metric Unit', 'Total Usage', 'Price per Unit', 'Total Cost']
+            
+            summary_display = product_summary[display_columns].copy()
+            summary_display.columns = column_names
+            
+            st.write(summary_display)
+            
+            # Show summary statistics for this product/SKU
+            total_customers = len(product_summary)
+            total_usage_sum = product_summary['Total usage'].sum()
+            total_revenue = product_summary['total'].sum()
+            avg_usage_per_customer = total_usage_sum / total_customers if total_customers > 0 else 0
+            
+            # Get the metric unit for display
+            metric_unit = product_summary['Metric unit'].iloc[0] if len(product_summary) > 0 else ""
+            
+            st.write(f"**Summary for {selected_service} - {selected_sku}:**")
+            st.write(f"- Total Customers: {total_customers}")
+            st.write(f"- Total Quantity: {total_usage_sum:,.2f} {metric_unit}")
+            st.write(f"- Total Revenue: ${total_revenue:,.2f}")
+            st.write(f"- Average Quantity per Customer: {avg_usage_per_customer:,.2f} {metric_unit}")
+            
+            # Create a bar chart showing top customers for this product/SKU
+            if len(product_summary) > 1:
+                top_customers_for_product = product_summary.head(10)  # Show top 10 customers
+                fig_product = px.bar(
+                    top_customers_for_product, 
+                    x='Tenant name', 
+                    y='total',
+                    title=f"Top Customers by Revenue - {selected_service} ({selected_sku})",
+                    labels={'total': 'Total Revenue ($)', 'Tenant name': 'Customer'}
+                )
+                fig_product.update_xaxis(tickangle=45)
+                st.plotly_chart(fig_product)
+        else:
+            st.write("No data found for the selected service/SKU combination.")
+
         tenant_name = st.selectbox("Select Tenant name:", merged_data['Tenant name'].unique())
 
         tenant_data = merged_data[merged_data['Tenant name'] == tenant_name][['Service name', 'Edition', 'SKU', 'Metric name', 'Metric unit', 'Total usage', 'perunit', 'total']]
