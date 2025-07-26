@@ -110,13 +110,23 @@ if current_usage_file:
             selected_service = st.selectbox("Select Service:", service_options)
         
         with col2:
-            # Filter SKUs based on selected service
+            # Filter SKUs based on selected service and create formatted options
             if selected_service == 'All Services':
-                sku_options = ['All SKUs'] + list(merged_data['SKU'].unique())
+                sku_data_for_dropdown = merged_data[['Metric name', 'SKU']].drop_duplicates()
             else:
-                filtered_skus = merged_data[merged_data['Service name'] == selected_service]['SKU'].unique()
-                sku_options = ['All SKUs'] + list(filtered_skus)
-            selected_sku = st.selectbox("Select SKU:", sku_options)
+                sku_data_for_dropdown = merged_data[merged_data['Service name'] == selected_service][['Metric name', 'SKU']].drop_duplicates()
+            
+            # Create formatted SKU options with "Metric Name - SKU" format
+            sku_options = ['All SKUs']
+            sku_mapping = {'All SKUs': 'All SKUs'}
+            
+            for _, row in sku_data_for_dropdown.iterrows():
+                formatted_option = f"{row['Metric name']} - {row['SKU']}"
+                sku_options.append(formatted_option)
+                sku_mapping[formatted_option] = row['SKU']
+            
+            selected_sku_display = st.selectbox("Select SKU:", sku_options)
+            selected_sku = sku_mapping[selected_sku_display]
         
         # Filter data based on selections
         filtered_product_data = merged_data.copy()
@@ -182,7 +192,7 @@ if current_usage_file:
                     title=f"Top Customers by Revenue - {selected_service} ({selected_sku})",
                     labels={'total': 'Total Revenue ($)', 'Tenant name': 'Customer'}
                 )
-                fig_product.update_xaxis(tickangle=45)
+                fig_product.update_layout(xaxis_tickangle=45)
                 st.plotly_chart(fig_product)
         else:
             st.write("No data found for the selected service/SKU combination.")
